@@ -45,7 +45,9 @@ export class AppService {
     getQuizzes(){
         return this.http.get('https://localhost:44365/api/Quiz');
     }
-
+    getAllQuizzes(){
+        return this.http.get('https://localhost:44365/api/Quiz/all');
+    }
 
     putQuiz(quiz){
         this.http.put(`https://localhost:44365/api/quiz/${quiz.id}`,quiz).subscribe(res=>{

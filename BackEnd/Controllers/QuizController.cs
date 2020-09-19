@@ -18,17 +18,28 @@ namespace BackEnd.Controllers
 		{
 			this.quizContext = quizContext;
 		}
-
+		[Authorize]
 		[HttpGet]
 		public IEnumerable<Models.Quiz> Get()
 		{
+			var userId = HttpContext.User.Claims.First().Value;
+			return quizContext.Quizs.Where(x=>x.OwnerId==userId);
+		}
+		[HttpGet("all")]
+		public IEnumerable<Models.Quiz> GetAllQuizzes()
+		{
 			return quizContext.Quizs;
 		}
-
 		[Authorize]
 		[HttpPost]
 		public async Task<IActionResult> Post([FromBody] Models.Quiz quiz)
 		{
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			var userId = HttpContext.User.Claims.First().Value;
+			quiz.OwnerId = userId;
+
 			quizContext.Quizs.Add(quiz);
 			await quizContext.SaveChangesAsync();
 			return Ok(quiz);

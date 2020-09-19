@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
-
+using System.Security.Claims;
 
 namespace BackEnd.Controllers
 {
@@ -42,15 +42,36 @@ namespace BackEnd.Controllers
 				return BadRequest(result.Errors);
 			await signInManager.SignInAsync(user, isPersistent: false);
 
+			return Ok(CreateToken(user));	
+		}
+
+		[HttpPost("login")]
+		public async Task<IActionResult> Login([FromBody] Credintials credintials)
+		{
+			var result = await signInManager.PasswordSignInAsync(credintials.Email, credintials.Password,false,false);
+
+			if (!result.Succeeded)
+				return BadRequest();
+			var user =await userManager.FindByEmailAsync(credintials.Email);
+			return Ok(CreateToken(user));
+		}
+
+
+		string CreateToken(IdentityUser user)
+		{
+			var claims = new Claim[] {
+				new Claim(JwtRegisteredClaimNames.Sub,user.Id)
+			};
+
 			var signingkey = new SymmetricSecurityKey
 				(Encoding.UTF8.GetBytes("this is the secret phrase"));
-			var signingCredentials = new SigningCredentials(signingkey,SecurityAlgorithms.HmacSha256);
+			var signingCredentials = new SigningCredentials(signingkey, SecurityAlgorithms.HmacSha256);
 
-			var jwt = new JwtSecurityToken(signingCredentials: signingCredentials);
+			var jwt = new JwtSecurityToken(signingCredentials: signingCredentials, claims: claims);
 
 			var token = new JwtSecurityTokenHandler().WriteToken(jwt).ToString();
-			
-			return Ok(JsonConvert.SerializeObject(token));
+
+			return JsonConvert.SerializeObject(token);
 		}
 	}
 }
