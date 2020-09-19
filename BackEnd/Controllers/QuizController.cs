@@ -25,7 +25,7 @@ namespace BackEnd.Controllers
 			var userId = HttpContext.User.Claims.First().Value;
 			return quizContext.Quizs.Where(x=>x.OwnerId==userId);
 		}
-		[HttpGet("all")]
+		[HttpGet("all")]//comment
 		public IEnumerable<Models.Quiz> GetAllQuizzes()
 		{
 			return quizContext.Quizs;
